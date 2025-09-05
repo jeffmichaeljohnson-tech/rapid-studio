@@ -1,0 +1,78 @@
+services:
+  orchestrator:
+    build: ../../containers/orchestrator
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    restart: unless-stopped
+
+  runner-gpu:
+    build: ../../containers/runner-gpu
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  validator-lite:
+    build: ../../containers/validator-lite
+    depends_on:
+      - redis
+      - runner-gpu
+    restart: unless-stopped
+
+  validator-full:
+    build: ../../containers/validator-full
+    depends_on:
+      - redis
+      - validator-lite
+    restart: unless-stopped
+
+  assets-api:
+    build: ../../containers/assets-api
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data/assets:/app/assets
+    restart: unless-stopped
+
+  redis:
+    image: redis:7
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:2.9.0
+    ports:
+      - "3100:3100"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:10.1.0
+    ports:
+      - "3000:3000"
+    depends_on:
+      - loki
+    restart: unless-stopped
+
+  nginx:
+    build: ../../containers/nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - orchestrator
+      - assets-api
+      - grafana
+    restart: unless-stopped
+
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    restart: unless-stopped

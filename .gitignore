@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Docker
+*.log
+*.pid
+*.sock
+*.db
+.env
+.env.*
+
+# Compose volumes
+/deploy/compose/data/
+/deploy/compose/logs/
+
+# OS
+.DS_Store
+
+# Benchmarks & cache
+/benchmarks/*
+!/benchmarks/.gitkeep
