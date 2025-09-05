@@ -1,0 +1,18 @@
+# Use Git LFS for large model/checkpoint files
+*.ckpt filter=lfs diff=lfs merge=lfs
+*.safetensors filter=lfs diff=lfs merge=lfs
+*.pth filter=lfs diff=lfs merge=lfs
+*.onnx filter=lfs diff=lfs merge=lfs
+
+# Also cover common big binary assets
+*.h5 filter=lfs diff=lfs merge=lfs
+*.pt filter=lfs diff=lfs merge=lfs
+*.bin filter=lfs diff=lfs merge=lfs
+
+# Media (optional, if you want to keep generated assets in repo later)
+*.png filter=lfs diff=lfs merge=lfs
+*.jpg filter=lfs diff=lfs merge=lfs
+*.jpeg filter=lfs diff=lfs merge=lfs
+*.mp4 filter=lfs diff=lfs merge=lfs
+*.mov filter=lfs diff=lfs merge=lfs
+
