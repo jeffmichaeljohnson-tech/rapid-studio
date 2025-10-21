@@ -1,0 +1,15 @@
+#!/bin/bash
+# LOAD SHARED CONTEXT - Auto-loading system for Rapid Studio
+# Run this at the start of any session to load shared context
+
+echo "🔄 LOADING SHARED CONTEXT - Synchronizing with other agent..."
+
+# Change to project directory
+cd "$(dirname "$0")"
+
+# Run the shared context loading script
+python tools/load_shared_context.py
+
+echo ""
+echo "✅ Shared context loaded successfully!"
+echo "🎯 Both agents now have synchronized knowledge!"

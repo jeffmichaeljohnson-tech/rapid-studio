@@ -1,0 +1,18 @@
+#!/bin/bash
+# END OF SESSION - Shared Context System for Rapid Studio
+# Run this command when ending your session with Claude
+# Writes to .ai-context/ for both Cursor and Claude synchronization
+
+echo "🧠 END OF SESSION - Preserving context for both Cursor and Claude..."
+
+# Change to project directory
+cd "$(dirname "$0")"
+
+# Run the shared context end session script
+python tools/end_session_shared.py
+
+echo ""
+echo "✅ Session context preserved for both agents!"
+echo "🔄 Cursor can now see what Claude discussed"
+echo "🔄 Claude can now see what Cursor implemented"
+echo "🎯 Perfect synchronization achieved!"
