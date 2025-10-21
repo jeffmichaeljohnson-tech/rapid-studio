@@ -1,0 +1,73 @@
+import React, { useState } from 'react';
+import { StyleSheet, Image, Dimensions } from 'react-native';
+import { PanGestureHandler } from 'react-native-gesture-handler';
+import Animated, {
+  useAnimatedGestureHandler,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  runOnJS,
+} from 'react-native-reanimated';
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
+
+export default function SwipeDeck({ images }: { images: string[] }) {
+  const [index, setIndex] = useState(0);
+  const translateX = useSharedValue(0);
+  const rotate = useSharedValue(0);
+
+  const nextCard = () => setIndex((prev) => (prev + 1) % images.length);
+
+  const gestureHandler = useAnimatedGestureHandler({
+    onActive: (event) => {
+      translateX.value = event.translationX;
+      rotate.value = event.translationX / 20;
+    },
+    onEnd: (event) => {
+      if (Math.abs(event.translationX) > SCREEN_WIDTH * 0.25) {
+        translateX.value = withSpring(
+          event.translationX > 0 ? SCREEN_WIDTH : -SCREEN_WIDTH,
+          {},
+          () => {
+            runOnJS(nextCard)();
+            translateX.value = 0;
+            rotate.value = 0;
+          }
+        );
+      } else {
+        translateX.value = withSpring(0);
+        rotate.value = withSpring(0);
+      }
+    },
+  });
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: translateX.value },
+      { rotate: `${rotate.value}deg` },
+    ],
+  }));
+
+  return (
+    <PanGestureHandler onGestureEvent={gestureHandler}>
+      <Animated.View style={[styles.card, animatedStyle]}>
+        <Image source={{ uri: images[index] }} style={styles.image} />
+      </Animated.View>
+    </PanGestureHandler>
+  );
+}
+
+const styles = StyleSheet.create({
+  card: {
+    width: SCREEN_WIDTH - 40,
+    height: 400,
+    borderRadius: 20,
+    overflow: 'hidden',
+    alignSelf: 'center',
+    marginTop: 100,
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+});

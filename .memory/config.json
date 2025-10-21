@@ -1,0 +1,68 @@
+{
+  "version": "1.0.0",
+  "autoSave": {
+    "enabled": true,
+    "intervalMinutes": 10,
+    "maxSessionFiles": 50,
+    "captureThreshold": 5
+  },
+  "contextSync": {
+    "enabled": true,
+    "bidirectional": true,
+    "watchPaths": [
+      "app/**/*.{ts,tsx}",
+      "components/**/*.{ts,tsx}",
+      "orchestrator/**/*.py",
+      "services/**/*.py",
+      "docs/**/*.md",
+      ".cursor/rules/*.{md,mdc}",
+      ".memory/context/**/*.md",
+      "package.json",
+      "docker-compose.yml"
+    ],
+    "syncTargets": [
+      ".cursor/context/",
+      ".claude/context/",
+      "docs/context/"
+    ],
+    "conflictResolution": "merge-with-timestamp"
+  },
+  "github": {
+    "autoCommit": true,
+    "autoPull": true,
+    "pullIntervalMinutes": 5,
+    "autoCommitPaths": [
+      ".memory/",
+      ".cursor/context/",
+      "docs/context/"
+    ],
+    "commitMessagePrefix": "[Memory]",
+    "branchProtection": {
+      "requirePullRequest": false,
+      "directPushPaths": [".memory/**", ".cursor/context/**"]
+    }
+  },
+  "retention": {
+    "sessions": {
+      "keepDays": 30,
+      "archiveAfterDays": 7,
+      "compressionEnabled": true
+    },
+    "context": {
+      "maxVersions": 10,
+      "keepCriticalForever": true
+    }
+  },
+  "notifications": {
+    "enabled": true,
+    "channels": ["console", "file"],
+    "levels": ["info", "warning", "error"]
+  },
+  "crossTool": {
+    "claudeCheckGitHubInterval": 300,
+    "cursorCheckGitHubInterval": 180,
+    "claudeReadsCursor": true,
+    "cursorReadsclaude": true,
+    "conflictResolution": "latest-timestamp-wins"
+  }
+}

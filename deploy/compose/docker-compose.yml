@@ -1,0 +1,115 @@
+version: '3.8'
+
+services:
+  nginx:
+    build: ../../containers/nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - orchestrator
+      - assets-api
+      - grafana
+    networks:
+      - rapid-studio
+
+  orchestrator:
+    build: ../../containers/orchestrator
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_URL=redis://redis:6379
+      - RUNPOD_API_KEY=${RUNPOD_API_KEY}
+    depends_on:
+      - redis
+    networks:
+      - rapid-studio
+
+  assets-api:
+    build: ../../containers/assets-api
+    ports:
+      - "8080:8080"
+    volumes:
+      - assets_data:/app/assets
+    networks:
+      - rapid-studio
+
+  runner-gpu:
+    build: ../../containers/runner-gpu
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+      - assets-api
+    networks:
+      - rapid-studio
+
+  validator-lite:
+    build: ../../containers/validator-lite
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+      - orchestrator
+    networks:
+      - rapid-studio
+
+  validator-full:
+    build: ../../containers/validator-full
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+      - orchestrator
+    networks:
+      - rapid-studio
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - rapid-studio
+
+  redis-insight:
+    image: redislabs/redisinsight:latest
+    ports:
+      - "8001:8001"
+    depends_on:
+      - redis
+    networks:
+      - rapid-studio
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - rapid-studio
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - rapid-studio
+
+volumes:
+  redis_data:
+  grafana_data:
+  prometheus_data:
+  assets_data:
+
+networks:
+  rapid-studio:
+    driver: bridge

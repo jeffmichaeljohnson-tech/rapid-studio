@@ -1,0 +1,53 @@
+name: Auto Sync & Status
+
+on:
+  push:
+    branches: ['**']
+  schedule:
+    # Run every 6 hours to check sync status
+    - cron: '0 */6 * * *'
+
+jobs:
+  sync-status:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Check Git Status
+        run: |
+          echo "## Repository Sync Status" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Last Commit:** $(git log -1 --pretty=format:'%h - %s (%an, %ar)')" >> $GITHUB_STEP_SUMMARY
+          echo "**Total Commits:** $(git rev-list --count HEAD)" >> $GITHUB_STEP_SUMMARY
+      
+      - name: List Recent Changes
+        run: |
+          echo "## Recent Changes (Last 5 Commits)" >> $GITHUB_STEP_SUMMARY
+          git log -5 --pretty=format:"- \`%h\` %s (%an, %ar)" >> $GITHUB_STEP_SUMMARY
+
+  project-health:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Check Project Structure
+        run: |
+          echo "## Project Health Check" >> $GITHUB_STEP_SUMMARY
+          echo "### Key Directories" >> $GITHUB_STEP_SUMMARY
+          for dir in rapid-mobile app components orchestrator containers scripts; do
+            if [ -d "$dir" ]; then
+              echo "✅ $dir exists" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ $dir missing" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+      
+      - name: Count Files by Type
+        run: |
+          echo "### File Statistics" >> $GITHUB_STEP_SUMMARY
+          echo "- TypeScript files: $(find . -name '*.ts' -o -name '*.tsx' | wc -l)" >> $GITHUB_STEP_SUMMARY
+          echo "- Python files: $(find . -name '*.py' | wc -l)" >> $GITHUB_STEP_SUMMARY
+          echo "- Docker files: $(find . -name 'Dockerfile*' -o -name 'docker-compose*.yml' | wc -l)" >> $GITHUB_STEP_SUMMARY
+          echo "- Shell scripts: $(find . -name '*.sh' | wc -l)" >> $GITHUB_STEP_SUMMARY

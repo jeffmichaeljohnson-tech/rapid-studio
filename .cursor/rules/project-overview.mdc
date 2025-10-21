@@ -1,0 +1,70 @@
+---
+description: Helpful for guiding AI on Rapid Studio’s architecture, development workflow, and coding conventions. Covers Expo mobile swipe deck (Reanimated + Gesture Handler), backend (FastAPI, Redis, Runpod GPU orchestration), Docker/Tailscale networking, and security best practices (Vault/Doppler). Apply when writing code, setting up infra, or troubleshooting dev workflows.
+alwaysApply: false
+---
+# Rapid Studio Project Rules
+
+## Scope
+project: rapid-studio
+tags: [expo, react-native, runpod, tailscale, docker, ai-training]
+
+## Context
+- Working name: Rapid Studio (aliases: RapidGPT, FlashGPT)
+- Mission: Deliver on-brand creative options instantly and reliably.
+- Core SLO: Generate 100 thumbnails in ≤15s.
+- UX pillars:
+  - **Mobile-first app (Expo)** with swipe gestures for training.
+  - **Web (Next.js)** for admin, docs, and payments.
+
+## Architecture
+- **Frontend (mobile):** Expo SDK (TypeScript), React Native, Reanimated 3, Gesture Handler.
+- **Backend (cloud):**
+  - Orchestrator: FastAPI + Redis Streams.
+  - GPU Engines: Runpod (primary), Vast.ai (burst), Lambda Labs (enterprise).
+  - Image pipeline: SDXL-Turbo/FLUX Schnell → Blender strict lane → BrandScore validators.
+- **Networking:** Tailscale tunnel (MagicDNS, ACLs) between Mac mini and cloud.
+- **Containers:** Docker for services; K3s/GKE optional for scaling.
+
+## Development Rules
+- Keep Expo dependencies local (Mac mini + Expo Go). Do not install Expo libs on Runpod.
+- All GPU generation runs inside Runpod/Vast.ai containers.
+- Use Docker Compose for local orchestration; Terraform/Pulumi for infra IaC.
+- Follow ADRs: 
+  - ADR-001: Mac for local heavy runs; Linux orchestrator only.
+  - ADR-002: Cloud-first testing (Runpod primary).
+  - ADR-003: Short-step models for thumbnails; heavy samplers for winners only.
+  - ADR-004: Hard quality gates (ΔE ≤ 3, IoU ≥ 0.90, dedupe checks).
+
+## Mobile App Rules
+- Always use `react-native-gesture-handler` + `reanimated` for swipe deck.
+- Swipe loop:
+  - Pre-render 3–5 cards ahead.
+  - Use Expo `Image.prefetch()` to decode images before swipes.
+  - Submit swipe results in **batches** → `POST /ratings`.
+  - Trigger new content batches → `POST /jobs` after every 10–15 swipes.
+- UX priority: Users must see improvement in feed by swipe ~25.
+
+## Security Rules
+- Secrets managed by Vault or Doppler (short-lived, dynamic tokens).
+- No secrets in Docker images; inject via sidecars (Vault Agent / Doppler EnvSync).
+- Tailscale ACLs enforce service isolation. All inter-service calls use mTLS.
+
+## Best Practices
+- Test Expo animations on **release builds**, not dev mode.
+- Maintain rolling image buffers (25 preloaded, auto-refill from backend).
+- Use Grafana dashboards for latency/cost monitoring.
+- Batch telemetry: never send events per-frame.
+
+## References
+- Expo Docs → https://docs.expo.dev
+- Reanimated → https://docs.swmansion.com/react-native-reanimated
+- Gesture Handler → https://docs.swmansion.com/react-native-gesture-handler
+- FlashList → https://shopify.github.io/flash-list
+- FastAPI → https://fastapi.tiangolo.com
+- Redis Streams → https://redis.io/docs/latest/develop/data-types/streams
+- Runpod → https://docs.runpod.io
+- Vast.ai → https://vast.ai/docs
+- Docker → https://docs.docker.com
+- Tailscale → https://tailscale.com/kb
+- Vault → https://developer.hashicorp.com/vault/docs
+- Doppler → https://docs.doppler.com

@@ -1,0 +1,61 @@
+{
+  "id": null,
+  "uid": "rapid-studio-logs",
+  "title": "Rapid Studio · Logs",
+  "tags": ["rapid", "logs", "loki"],
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+    {
+      "title": "Validator Lite Logs",
+      "type": "logs",
+      "datasource": {"type": "loki", "uid": "loki"},
+      "targets": [
+        {
+          "expr": "{container=\"validator-lite\"}",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 0}
+    },
+    {
+      "title": "Validator Full Logs",
+      "type": "logs",
+      "datasource": {"type": "loki", "uid": "loki"},
+      "targets": [
+        {
+          "expr": "{container=\"validator-full\"}",
+          "refId": "B"
+        }
+      ],
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 10}
+    },
+    {
+      "title": "Runner GPU Logs",
+      "type": "logs",
+      "datasource": {"type": "loki", "uid": "loki"},
+      "targets": [
+        {
+          "expr": "{container=\"runner-gpu\"}",
+          "refId": "C"
+        }
+      ],
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 20}
+    },
+    {
+      "title": "Orchestrator Logs",
+      "type": "logs",
+      "datasource": {"type": "loki", "uid": "loki"},
+      "targets": [
+        {
+          "expr": "{container=\"orchestrator\"}",
+          "refId": "D"
+        }
+      ],
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 30}
+    }
+  ]
+}
+

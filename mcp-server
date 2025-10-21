@@ -1,0 +1,30 @@
+#!/bin/bash
+# Rapid Studio MCP Server Control Script
+
+case "$1" in
+    start)
+        echo "Starting Rapid Studio MCP Server..."
+        cd "/Users/computer/rapid-studio-1/.mcp"
+        ./start-server.sh
+        ;;
+    test)
+        echo "Testing Rapid Studio MCP Server..."
+        cd "/Users/computer/rapid-studio-1/.mcp"
+        ./test-server.sh
+        ;;
+    status)
+        if pgrep -f "rapid-studio-server.py" > /dev/null; then
+            echo "✅ MCP Server is running"
+        else
+            echo "❌ MCP Server is not running"
+        fi
+        ;;
+    *)
+        echo "Usage: $0 {start|test|status}"
+        echo ""
+        echo "Commands:"
+        echo "  start  - Start the MCP server"
+        echo "  test   - Test the MCP server"
+        echo "  status - Check if MCP server is running"
+        ;;
+esac

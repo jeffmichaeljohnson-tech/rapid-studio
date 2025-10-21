@@ -1,0 +1,177 @@
+---
+description: Code quality standards and best practices. Refer to this document often to keep your memory sharp.
+alwaysApply: false
+---
+# Cursor AI Rules for Rapid Studio
+
+## Project Context
+This is Rapid Studio, a mobile-first creative AI platform targeting 100 image generations in ≤15 seconds per user. Core technologies: Expo/React Native, FastAPI, Runpod GPU, Tailscale, Docker.
+
+## Code Quality Standards
+
+### TypeScript Rules
+- Always use TypeScript with strict mode enabled
+- Prefer interfaces over types for object shapes
+- Use proper generic constraints for reusable components
+- Never use `any` - use `unknown` with type guards instead
+
+### React Native/Expo Specific
+- Always import from 'react-native-gesture-handler' first, before other react-native imports
+- Use Reanimated 3 SharedValues and worklets for 60fps animations
+- Prefer `Expo.Image` over React Native Image for better performance
+- Always implement proper error boundaries for production code
+- Use `expo-router` file-based routing convention
+
+### Performance Critical Rules
+- All animations MUST run on the UI thread using Reanimated worklets
+- Batch API calls - never make individual requests for user actions
+- Implement proper image prefetching with `Expo.Image.prefetch()`
+- Use `react-native-fast-image` for high-performance image rendering
+- Always measure frame rates in release builds, not development
+
+### Backend Architecture
+- FastAPI services must use async/await consistently
+- Use Redis Streams for job queuing, not simple Redis pub/sub  
+- All GPU operations must be containerized and stateless
+- Implement circuit breakers for external service calls
+- Use structured logging with correlation IDs
+
+### Docker & Infrastructure
+- Multi-stage Dockerfiles with production optimizations
+- Never include secrets in Docker images - use runtime injection
+- Use specific version tags, never 'latest'
+- Implement proper health checks for all services
+- Use Docker Compose profiles for dev/prod environments
+
+### Security Requirements
+- All secrets managed by Vault or Doppler with short-lived tokens
+- Implement mTLS for all inter-service communication
+- Use Tailscale ACLs for network segmentation
+- Log all security events with audit trails
+- Rotate credentials automatically
+
+## File Organization
+
+### Mobile App Structure
+```
+rapid-mobile/
+├── app/                    # Expo Router pages
+├── components/            
+│   ├── ui/               # Reusable UI components
+│   ├── SwipeDeck.tsx     # Core swipe interface
+│   └── providers/        # Context providers
+├── services/             # API clients and utilities
+├── stores/               # State management
+├── types/                # TypeScript definitions
+└── utils/                # Helper functions
+```
+
+### Backend Structure
+```
+containers/
+├── orchestrator/         # FastAPI + Redis job router
+├── gpu-runner/          # SDXL/FLUX image generation
+├── validators/          # Quality control services
+├── assets-api/          # File upload/download service
+└── monitoring/          # Observability stack
+```
+
+## Coding Patterns
+
+### SwipeDeck Implementation
+```typescript
+// Always use worklets for gesture handling
+const gestureHandler = useAnimatedGestureHandler({
+  onStart: (_, context) => {
+    'worklet';
+    context.startX = translateX.value;
+  },
+  onActive: (event, context) => {
+    'worklet';
+    translateX.value = context.startX + event.translationX;
+  },
+});
+```
+
+### API Client Pattern
+```typescript
+// Batch operations for performance
+class RatingService {
+  private batchQueue: Rating[] = [];
+  private batchTimer: NodeJS.Timeout | null = null;
+
+  submitRating(rating: Rating) {
+    this.batchQueue.push(rating);
+    this.scheduleBatch();
+  }
+  
+  private scheduleBatch() {
+    if (this.batchTimer) return;
+    
+    this.batchTimer = setTimeout(() => {
+      this.flushBatch();
+    }, 100); // 100ms batch window
+  }
+}
+```
+
+### Container Health Checks
+```dockerfile
+# Always implement proper health checks
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8000/health || exit 1
+```
+
+## Performance Targets
+- First image tile: ≤ 1.5s (target: 0.8s)
+- Full 100 image grid: ≤ 15s (target: 10s)  
+- SwipeDeck animations: 60fps on UI thread
+- User sees improvement by swipe #25
+- Cost target: <$0.10 per 100 images
+
+## Error Handling Patterns
+- Always implement exponential backoff for retries
+- Use circuit breakers for external dependencies
+- Log errors with full context and correlation IDs
+- Graceful degradation for non-critical features
+- User-friendly error messages, detailed internal logs
+
+## Development Workflow
+- Test animations in Expo release builds, not dev mode
+- Use Docker Compose for local development
+- Deploy containers to Runpod for GPU testing
+- Monitor all services with Grafana dashboards
+- Automate everything with scripts in ./scripts/
+
+## Documentation Requirements
+- README.md in each service directory
+- API documentation with OpenAPI/Swagger
+- Architecture Decision Records (ADRs) for major choices
+- Performance benchmark results and optimization notes
+- Security review documentation
+
+## Common Patterns to Avoid
+- ❌ Using dev mode for performance testing
+- ❌ Individual API calls instead of batching
+- ❌ Storing secrets in code or Docker images  
+- ❌ Blocking the main thread with heavy operations
+- ❌ Using 'any' type in TypeScript
+- ❌ Missing error boundaries in React components
+- ❌ Synchronous operations in performance-critical paths
+
+## AI Assistant Guidelines
+- Always reference the latest documentation for Expo, Runpod, Tailscale
+- Prioritize performance and scalability in all recommendations
+- Suggest specific optimizations for the 100 images/15s target
+- Include proper error handling and monitoring in all code
+- Consider mobile-first design in all UI recommendations
+- Think about the full development → production deployment pipeline
+- Suggest automation opportunities for manual processes
+
+## Success Criteria
+- Code passes all performance benchmarks
+- Services are fully containerized and production-ready
+- Mobile app provides smooth 60fps user experience
+- Backend achieves target image generation speeds
+- All services are properly monitored and observable
+- Security requirements are fully implemented

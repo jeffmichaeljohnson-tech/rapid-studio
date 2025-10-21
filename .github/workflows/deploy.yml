@@ -1,0 +1,44 @@
+name: Deploy Rapid Studio
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-mobile:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - name: Install mobile dependencies
+        run: |
+          cd rapid-mobile
+          npm install
+      - name: Test Expo build
+        run: |
+          cd rapid-mobile
+          npx expo export --platform all
+
+  deploy-runpod:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy GPU fleet
+        env:
+          RUNPOD_API_KEY: ${{ secrets.RUNPOD_API_KEY }}
+        run: |
+          ./scripts/deploy-runpod.sh
+
+  performance-test:
+    runs-on: ubuntu-latest
+    needs: deploy-runpod
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Test prefetch performance
+        run: |
+          ./scripts/test-prefetch-performance.sh
