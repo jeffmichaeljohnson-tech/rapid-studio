@@ -1,0 +1,16 @@
+#!/bin/bash
+# LOAD SHARED CONTEXT - GitHub-Integrated Auto-loading system
+# Run this at the start of any session to load shared context from GitHub
+
+echo "🔄 LOADING SHARED CONTEXT - GitHub-Integrated System..."
+
+# Change to project directory
+cd "$(dirname "$0")"
+
+# Run the GitHub-integrated shared context loading script
+python tools/load_shared_context_github.py
+
+echo ""
+echo "✅ Shared context loaded from GitHub successfully!"
+echo "🎯 Both agents now have synchronized knowledge!"
+echo "🚀 Zero blindspots achieved!"
