@@ -1,0 +1,15 @@
+# Claude Context Rules
+
+## Always check these files for latest project state:
+- .claude-context/RECENT_ACTIVITY.md - Latest commits and changes
+- .claude-context/GIT_STATUS.md - Current git state
+- .claude-context/SYSTEM_STATUS.md - System resources
+- .claude-context/DOCKER_STATUS.md - Running containers
+- .claude-context/PROJECT_OVERVIEW.md - Full directory structure
+
+## When asked about "recent changes" or "what's happening":
+1. Read RECENT_ACTIVITY.md first
+2. Check GIT_STATUS.md for branch/commits
+3. Reference PROJECT_OVERVIEW.md for structure
+
+## This directory is auto-updated by webhook integration
